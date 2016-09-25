@@ -30,14 +30,6 @@ function app(){
  * @return string       json
  */
 function json($data){
-    if($data instanceof ArrayIterator){
-        $xdata = [];
-        foreach ($data as $k => $info) {
-            $xdata[] = $info->toArray();
-        }
-        $data = $xdata;
-    }
-
     echo json_encode($data);
 }
 
@@ -99,11 +91,23 @@ function all($key, $dval=null){
     return isset($all[$key]) ? $all[$key] : $dval;
 }
 
+/**
+ * get post form data
+ * @param  string $key  form key
+ * @param  mixed $dval default value
+ * @return mixed       form value
+ */
 function input($key, $dval=null){
     $data = request()->data;
     return isset($data[$key]) ? $data[$key] : $dval;
 }
 
+/**
+ * get query parameters
+ * @param  string $key  query key
+ * @param  mixed $dval default value
+ * @return string       query value
+ */
 function query($key, $dval=null){
     $data = request()->query;
     return isset($data[$key]) ? $data[$key] : $dval;
@@ -118,6 +122,10 @@ function db($key){
     return DB::connection($key);
 }
 
+/**
+ * get origin url; eg:http[s]://www.domain.com
+ * @return string url
+ */
 function url_origin(){
     $s        = $_SERVER;
     $port     = $s['SERVER_PORT'];
