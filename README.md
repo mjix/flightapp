@@ -77,7 +77,7 @@ request();                              //add request()->all; Flight::request();
 view('dirname/filename', assignData);   //render template
 
 db($confname);                          //get orm
-url($subpath);                          //get full url
+url();                                  //get requested url; url('/news/id'); full url
 config();                               //config
 json();                                 //echo json string
 all();                                  //input(); query();

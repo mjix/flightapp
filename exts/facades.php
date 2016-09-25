@@ -81,7 +81,7 @@ function url($url=''){
     $base = $req->base;
     $base = rtrim($base, '/');
     $url = ltrim($url, '/');
-    return $base.'/'.$url;
+    return $base.($url ? '/'.$url : $url);
 }
 
 /**
