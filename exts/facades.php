@@ -74,7 +74,11 @@ function view($file='', $data=[]){
  * @return string      full url
  */
 function url($url=''){
-    $base = app()->request()->base;
+    $req = app()->request();
+    if(!$url){
+        return $req->url;
+    }
+    $base = $req->base;
     $base = rtrim($base, '/');
     $url = ltrim($url, '/');
     return $base.'/'.$url;
