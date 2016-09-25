@@ -1,6 +1,12 @@
 # flightapp
 flightapp create from flightphp(git: [https://github.com/mikecao/flight])
 
+#Installation
+If you're using Composer, you can run the following command:
+```
+composer update
+```
+
 #config
 ```php
 //set config
@@ -29,7 +35,7 @@ $all = request()->all;
 ```
 
 #DB
-orm create from https://github.com/mardix/VoodOrm; config in config/databases.php
+orm create from [https://github.com/mardix/VoodOrm]; config in config/databases.php
 
 ##query
 ```php
