@@ -29,7 +29,7 @@ $allPostData = request()->data;
 $val = query('get_key', $defaultval);
 $allQuery = request()->query;
 
-get from $_REQUEST
+//get from $_REQUEST
 $val = all('key', $defaultval);
 $all = request()->all;
 ```
