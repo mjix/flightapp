@@ -76,7 +76,7 @@ function view($file='', $data=[]){
 function url($url=''){
     $req = app()->request();
     if(!$url){
-        return $req->url;
+        return url('/').$req->url;
     }
     $base = $req->base;
     $base = rtrim($base, '/');
@@ -140,4 +140,25 @@ function url_origin(){
     $port     = ((!$ssl && $port=='80') || ($ssl && $port=='443')) ? '' : ':'.$port;
     $host     = $s['SERVER_NAME'].$port;
     return $protocol.'://'.$host;
+}
+
+function redirect($url, $status=303){
+    app()->redirect($url, $status);
+}
+
+function session($key, $dval=null){
+    @session_start();
+    
+    if(is_null($key)){
+        return $_SESSION;
+    }
+
+    if (is_array($key)) {
+        foreach ($key as $k => $v) {
+            $_SESSION[$k] = $v;
+        }
+        return $_SESSION;
+    }
+
+    return isset($_SESSION[$key]) ? $_SESSION[$key] : $dval;
 }
