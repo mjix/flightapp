@@ -260,12 +260,13 @@ class MoloOrm
         
         if ($this->pdo_executed == true) {
             $this->_data = $this->pdo_stmt->fetchAll(PDO::FETCH_ASSOC);
-            $this->_objdata = [];
+            $_objdata = [];
             foreach ($this->_data as $i => $row) {
-                $this->_objdata[] = (object)$row;
+                $_objdata[] = (object)$row;
             }
 
-            return $this->_objdata;
+            $this->reset();
+            return $_objdata;
         }
         return false;
     }
@@ -278,7 +279,7 @@ class MoloOrm
     public function first()
     {
         $this->limit(1);
-        $findAll = $this->find();
+        $findAll = $this->get();
         return $findAll ? $findAll[0] : [];
     }
     
@@ -1093,7 +1094,7 @@ class MoloOrm
     public function aggregate($fn)
     {
         $this->select($fn, 'count');
-        $result = $this->findOne();
+        $result = $this->first();
         return ($result !== false && isset($result->count)) ? $result->count : 0;
     }
 
@@ -1120,213 +1121,7 @@ class MoloOrm
         return $this->_data;
     }
     
-    public function __get($key)
-    {
-        return $this->get($key);
-    }
 
-    public function __set($key, $value)
-    {
-        $this->set($key, $value);
-    }
-
-    public function __isset($key)
-    {
-        return isset($this->_data[$key]);
-    }    
-
-/*******************************************************************************/
-
-    /**
-     * To dynamically call a table
-     *
-     * $MoloOrm = new MoloOrm($myPDO);
-     * on table 'users'
-     * $Users = $MoloOrm->table("users");
-     *
-     * Or to call a table relationship
-     * on table 'photos' where users can have many photos
-     * $allMyPhotos = $Users->findOne(1234)->photos();
-     *
-     * On relationship, it is faster to do eager load (MoloOrm::REL_HASONE | MoloOrm::REL_HASMANY)
-     * All the data are loaded first than queried after. Eager load does one round to the table.
-     * Lazy load will do multiple round to the table.
-     *
-     * @param  string $tablename
-     * @param  string $arg
-     * @return type
-     */
-    public function __call($tablename,$args)
-    {
-        /**
-         * On single object we'll create a relationship to the table called
-         * i.e:
-         *  tablename(INT REL_TYPE, STRING foreign_key_name, ARRAY $whereArgs, Closure $callback)
-         *
-         * or
-         *  tablename(foreign_key_name)
-         *
-         * or
-         *  tablename(array("name"=>"hello"))
-         *
-         * or
-         *  tablename(function(res){return $res});
-         */
-        if ($this->is_single) {
-
-            $relationship = self::REL_HASMANY;
-            $foreignKeyN = "";
-            $whereCondition = null;
-            $callback = null;
-
-            /**
-             * Assign vars. Any position should work, but it would be best
-             * if you follow:
-             * tablename(INT REL_TYPE, STRING foreign_key_name, ARRAY $whereArgs)
-             */
-            do {
-                if (isset($args[0])) {
-                    if (($args[0] === self::REL_HASONE) || ($args[0] === self::REL_LAZYONE) ||
-                        ($args[0] === self::REL_HASMANY) || ($args[0] === self::REL_LAZYMANY)
-                    ){
-                        $relationship = $args[0];
-                    } else if (is_string($args[0])) {
-                        $foreignKeyN = $args[0];
-                    } else if (is_array($args[0])){
-                        $whereCondition = $args[0];
-                    } else if ($args[0] instanceof Closure) {
-                        $callback = $args[0];
-                    }                    
-                }
-
-                 
-                array_shift($args);
-
-            } while (count($args));
-
-            switch ($relationship) {
-                /**
-                 * By default OneToMany
-                 * OneToMany : Eager Load.
-                 * All data will be loaded. Only does one round to the db table
-                 * Efficient and faster
-                 */
-                default:
-                case self::REL_HASMANY:
-
-                    $primaryKeyN = $this->getPrimaryKeyname();
-                    $foreignKeyN = ($foreignKeyN) ?: $this->getForeignKeyname();
-
-                    $token = $this->tokenize($tablename,$foreignKeyN.":".$relationship);
-
-                    if (!isset(self::$references[$token])) {
-                        $newInstance = $this->table($tablename);
-                        if (isset($this->reference_keys[$primaryKeyN])) {
-                           $newInstance->where($foreignKeyN, $this->reference_keys[$primaryKeyN]); 
-                        }
-                        
-                        if(is_array($whereCondition)){
-                            $newInstance->where($whereCondition);
-                        }
-
-                        self::$references[$token] = $newInstance->find(function($rows) use ($newInstance,$foreignKeyN,$callback) {
-                            $results = [];
-                            foreach ($rows as $row) {
-                                if(!isset($results[$row[$foreignKeyN]])){
-                                    $results[$row[$foreignKeyN]] = new ArrayIterator;
-                                }
-                                $results[$row[$foreignKeyN]]->append(is_callable($callback)
-                                                                     ? $callback($row) : $newInstance->fromArray($row));
-                            }
-                            return $results;
-                        });
-                    }
-                    return isset(self::$references[$token][$this->{$primaryKeyN}])
-                                ? self::$references[$token][$this->{$primaryKeyN}] : false;
-
-                break;
-
-                /**
-                 * OneToMany: Lazy Load
-                 * Data loaded upon request. Will take multiple rounds the table
-                 */
-                case self::REL_LAZYMANY:
-                    $newInstance = $this->table($tablename)
-                                        ->where($this->getForeignKeyname(),$this->getPK());
-                    if(is_array($whereCondition)){
-                        $newInstance->where($whereCondition);
-                    }
-                    return is_callable($callback) ? $callback($newInstance) : $newInstance;
-                break;
-
-                /**
-                 * OneToOne: Eager Load
-                 * All data will be loaded. Only does one round to the db table
-                 * Efficient and faster
-                 */
-                case self::REL_HASONE:
-                    if(! $foreignKeyN) {
-                        $foreignKeyN = $this->formatKeyname($this->getStructure()["foreignKeyname"], $tablename);
-                    }
-                    
-                    if (isset($this->{$foreignKeyN})) {
-
-                        $token = $this->tokenize($tablename,$foreignKeyN.":".$relationship);
-
-                        // MoloOrm
-                        if (!isset(self::$references[$token])) {
-
-                            $newInstance = $this->table($tablename);
-                            $primaryKeyN = $newInstance->getprimaryKeyname();
-                            
-                            if (isset($this->reference_keys[$foreignKeyN])) {
-                               $newInstance->where($primaryKeyN, $this->reference_keys[$foreignKeyN]); 
-                            }                            
-                            
-                            if(is_array($whereCondition)){
-                                $newInstance->where($whereCondition);
-                            }
-
-                            self::$references[$token] = $newInstance->find(function($rows) use ($newInstance,$callback) {
-                               $results = [];
-                               foreach ($rows as $row) {
-                                    $results[$row[$newInstance->getPrimaryKeyname()]] =  is_callable($callback)
-                                                                                ? $callback($row)
-                                                                                : $newInstance->fromArray($row);
-                               }
-
-                               return $results;
-                            });
-                        }
-
-                        return self::$references[$token][$this->{$foreignKeyN}];
-                    } else {
-                        return null;
-                    }
-
-                break;
-
-                /**
-                 * OneToOne: Lazy Load
-                 * Data loaded upon request. Will take multiple rounds the table
-                 */
-                case self::REL_LAZYONE:
-                    $newInstance = $this->table($tablename)
-                                        ->wherePK($this->{$foreignKeyN});
-                    if(is_array($whereCondition)){
-                        $newInstance->where($whereCondition);
-                    }
-
-                    $one = $newInstance->findOne();
-
-                    return is_callback($callback) ? $callback($one) : $one;
-                break;
-            }
-        } else {
-            return $this->table($tablename);
-        }
-
-    }
 
 /*******************************************************************************/
 // Utilities methods
@@ -1346,7 +1141,6 @@ class MoloOrm
         $this->offset = null;
         $this->order_by = [];
         $this->group_by = [];
-        $this->_data = [];
         $this->_dirty_fields = [];
         $this->is_fluent_query = true;
         $this->and_or_operator = self::OPERATOR_AND;
