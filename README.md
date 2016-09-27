@@ -70,7 +70,7 @@ $table = db('testdb')->table('news');
 $table->where('id', 1)->delete();
 ```
 
-##LOG
+##log
 ```php
 //default log file:ROOT_PATH.'/var/log/';
 //debug|info|error
@@ -78,17 +78,24 @@ app()->log()->info('log msg:%s', 'username');
 ```
 
 #facades
-```
+```php
 app();                                  //fligtphp instance Flight::app();
 request();                              //add request()->all; Flight::request();
-view('dirname/filename', assignData);   //render template
+view('dirname/filename', $assignData);  //render template
 
 db($confname);                          //get orm
-url();                                  //get requested url; url('/news/id'); full url
-config();                               //config
-json();                                 //echo json string
-all();                                  //input(); query();
+url();                                  //get requested url; url('/news/id');
 url_origin();                           //eg: http://www.domainname.com
+
+config('app.key', $default);            //set config:config(['key'=>'value']);
+json();                                 //echo json string
+
+all('key', $default);                   //$_REQUEST;
+input('key', $default);                 //$_REQUEST;
+query('key', $default);                 //$_GET;
+
+session('name', $default);              //set session:session(['name'=>'value']);
+redirect($url, $status=303);            //redirect url; redirect('/user/login');
 resource_path('/config/databases.php'); //get full path file
 ```
 
