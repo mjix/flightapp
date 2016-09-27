@@ -5,14 +5,14 @@ use flight\util\Collection;
 /**
  * get config from config file; eg:config('app.env')
  * @param  string $key eg:app.debug; notice:if array set config
- * @param  mixed $defaultval default val if config not exist
+ * @param  mixed $dval default val if config not exist
  * @return mixed      value
  */
-function config($key, $defaultval=null){
+function config($key, $dval=null){
     if(is_array($key)){
         return exts\Config::set($key);
     }else{
-        return exts\Config::get($key);
+        return exts\Config::get($key, $dval);
     }
 }
 
@@ -138,7 +138,7 @@ function url_origin(){
     $sp       = strtolower($s['SERVER_PROTOCOL']);
     $protocol = substr($sp, 0, strpos($sp, '/')).($ssl ? 's' : '');
     $port     = ((!$ssl && $port=='80') || ($ssl && $port=='443')) ? '' : ':'.$port;
-    $host     = $s['SERVER_NAME'].$port;
+    $host     = $s['HTTP_HOST']; //.$port;
     return $protocol.'://'.$host;
 }
 
@@ -148,7 +148,7 @@ function redirect($url, $status=303){
 
 function session($key, $dval=null){
     @session_start();
-    
+
     if(is_null($key)){
         return $_SESSION;
     }

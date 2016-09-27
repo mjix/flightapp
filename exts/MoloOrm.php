@@ -889,14 +889,10 @@ class MoloOrm
         }
                 
         $rowCount = $this->rowCount();
-
         // On single element return the object
         if ($rowCount == 1) {
-            $primaryKeyname = $this->getPrimaryKeyname();
-            $data[$primaryKeyname] = $this->pdo->lastInsertId($primaryKeyname);
-            return $this->fromArray($data);
+            return $this->pdo->lastInsertId();
         }
-
         return $rowCount;
     }
 

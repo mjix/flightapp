@@ -11,14 +11,14 @@ class Config{
      * @param  string $key config key
      * @return mixed      config value
      */
-    protected static function _loadConfig($key){
+    protected static function _loadConfig($key, $dval=null){
         //split key: app.debug //config/app.php
         $keys = explode('.', $key);
         $nkey = $keys[0];
 
         //if config.file loaded but not found config
         if(isset(self::$_config[$nkey])){
-            return false;
+            return $dval;
         }
 
         $file = ROOT_PATH.'/config/'.$nkey.'.php';
@@ -33,7 +33,7 @@ class Config{
                 return self::$_config[$key];
             }
         }
-        return null;
+        return $dval;
     }
 
     /**
@@ -41,7 +41,7 @@ class Config{
      * @param  string $key config key
      * @return mixed      config value
      */
-    public static function get($key=''){
+    public static function get($key='', $dval=null){
         if(!$key){
             return self::$_config;
         }
@@ -49,7 +49,7 @@ class Config{
             return self::$_config[$key];
         }
 
-        return self::_loadConfig($key);
+        return self::_loadConfig($key, $dval);
     }
 
     /**

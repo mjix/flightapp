@@ -12,6 +12,11 @@ require APP_PATH.'/routes.php';
 
 $app = app();
 
+//set template path
 $app->set('flight.views.path', APP_PATH.'/views');
+
+//register log handler; app()->log()->info('setest');
+$app->register('log', exts\LogHandler::class);
+
 return $app;
 
