@@ -70,6 +70,13 @@ $table = db('testdb')->table('news');
 $table->where('id', 1)->delete();
 ```
 
+##LOG
+```php
+//default log file:ROOT_PATH.'/var/log/';
+//debug|info|error
+app()->log()->info('log msg:%s', 'username');
+```
+
 #facades
 ```
 app();                                  //fligtphp instance Flight::app();
