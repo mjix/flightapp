@@ -18,7 +18,9 @@ class NewOrm extends MoloOrm{
         $per_page = all('per_page', 1);
         $per_page = max(15, $per_page);
 
-        $total = $this->count();
+        $obj = clone $this;
+        $total = $obj->count();
+
         $offset = ($page-1)*$per_page;
         $sele = $this->offset($offset)->limit($per_page);
         $list = $sele->get();

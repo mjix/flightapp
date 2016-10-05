@@ -138,7 +138,7 @@ function url_origin(){
     $sp       = strtolower($s['SERVER_PROTOCOL']);
     $protocol = substr($sp, 0, strpos($sp, '/')).($ssl ? 's' : '');
     $port     = ((!$ssl && $port=='80') || ($ssl && $port=='443')) ? '' : ':'.$port;
-    $host     = $s['HTTP_HOST'].$port;
+    $host     = $s['HTTP_HOST']; //.$port;
     return $protocol.'://'.$host;
 }
 

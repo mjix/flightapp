@@ -1,5 +1,6 @@
 <?php
 namespace exts;
+use Exception;
 
 class LogHandler{
     protected $LOG_LEVEL_DEBUG      =  'DEBUG';
@@ -20,8 +21,14 @@ class LogHandler{
         $config = config('app.logconfig', []);
         $this->_config = array_merge($this->_config, $config, $_config);
         $self = $this;
-        app()->before('stop', function(&$params, &$output) use ($self){
+
+        $app = app();
+        $app->before('stop', function(&$params, &$output) use ($self){
             $self->writer();
+        });
+
+        $app->before('error', function(&$params, &$output) use ($self){
+            $this->writer();
         });
     }
 

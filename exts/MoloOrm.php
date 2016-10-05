@@ -72,13 +72,15 @@ class MoloOrm
     private $_dirty_fields = [];
     private $query_profiler = [];
     private $reference_keys = [];
-    private static $references = []; 
-    
+    private static $references = [];
+
     // Table structure
     public $table_structure = [
         "primaryKeyname"    => "id",
         "foreignKeyname"    => "%s_id"
     ];
+
+    private static $_onQuery = null;
 
 /*******************************************************************************/
 
@@ -225,6 +227,12 @@ class MoloOrm
         ];
         $this->query_profiler["total_time"] = $this->query_profiler["total_time"] + $_time;
         
+        if(is_array(self::$_onQuery)){
+            call_user_func([self::$_onQuery[0], self::$_onQuery[1]], $query, $parameters);
+        }else if(self::$_onQuery){
+            call_user_func(self::$_onQuery, $query, $parameters);
+        }
+
         if ($return_as_pdo_stmt) {
             return $this->pdo_stmt;
         } else {
@@ -269,6 +277,15 @@ class MoloOrm
             return $_objdata;
         }
         return false;
+    }
+
+    public function debug(){
+        if($this->is_fluent_query && $this->pdo_stmt == null){
+            $this->sql_parameters = $this->getWhereParameters();
+            $this->sql_query = $this->getSelectQuery();
+            $this->pdo_stmt = $this->pdo->prepare($this->sql_query);
+        }
+        $this->pdo_stmt->debugDumpParams();
     }
     
     /**
@@ -881,12 +898,6 @@ class MoloOrm
         $sql .= "VALUES " . implode(',', $question_marks);
 
         $this->query($sql,$insert_values);
-
-        // Return the SQL Query
-        if ($this->debug_sql_query) {
-            $this->debugSqlQuery(false);
-            return $this;
-        }
                 
         $rowCount = $this->rowCount();
         // On single element return the object
@@ -937,13 +948,8 @@ class MoloOrm
         $this->query($query, $values);
         
         // Return the SQL Query
-        if ($this->debug_sql_query) {
-            $this->debugSqlQuery(false);
-            return $this;
-        } else {
-            $this->_dirty_fields = [];
-            return $this->rowCount();            
-        }
+        $this->_dirty_fields = [];
+        return $this->rowCount();
     }
 
 /*------------------------------------------------------------------------------
@@ -973,12 +979,7 @@ class MoloOrm
         }
 
         // Return the SQL Query
-        if ($this->debug_sql_query) {
-            $this->debugSqlQuery(false);
-            return $this;
-        } else {
-           return $this->rowCount(); 
-        }
+        return $this->rowCount();
     }
     
 /*------------------------------------------------------------------------------
@@ -1117,7 +1118,13 @@ class MoloOrm
         return $this->_data;
     }
     
+    public static function setOnQuery($callback){
+        self::$_onQuery = $callback;
+    }
 
+    public static function getOnQuery(){
+        return self::$_onQuery;
+    }
 
 /*******************************************************************************/
 // Utilities methods
