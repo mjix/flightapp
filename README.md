@@ -99,3 +99,29 @@ redirect($url, $status=303);            //redirect url; redirect('/user/login');
 resource_path('/config/databases.php'); //get full path file
 ```
 
+#more
+```
+//record all INSERT/UPDATE/DELETE action
+use exts\MoloOrm;
+MoloOrm::setOnQuery(function($sql, $params){
+    if(strtoupper(substr($sql, 0, 6)) == 'SELECT'){
+        return ;
+    }
+    
+    $callback = MoloOrm::getOnQuery();
+    MoloOrm::setOnQuery(false);
+
+    $userinfo = session('userinfo');
+    $table = db('pcmgr_tuijian')->table('e_sqllog');
+    $table->insert([
+        'sqlstr' => $sql,
+        'params' => $params ? json_encode($params) : '',
+        'ipaddr' => request()->ip,
+        'insuser' => $userinfo && isset($userinfo['name']) ? $userinfo['name'] : 'unknow',
+        'instime' => date('Y-m-d H:i:s')
+    ]);
+
+    MoloOrm::setOnQuery($callback);
+});
+```
+
