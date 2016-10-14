@@ -899,12 +899,15 @@ class MoloOrm
 
         $this->query($sql,$insert_values);
                 
-        $rowCount = $this->rowCount();
+        $ret = $this->rowCount();
+        
         // On single element return the object
-        if ($rowCount == 1) {
-            return $this->pdo->lastInsertId();
+        if ($ret == 1) {
+            $ret = $this->pdo->lastInsertId();
         }
-        return $rowCount;
+
+        $this->reset();
+        return $ret;
     }
 
 /*------------------------------------------------------------------------------
@@ -947,9 +950,12 @@ class MoloOrm
 
         $this->query($query, $values);
         
+
         // Return the SQL Query
         $this->_dirty_fields = [];
-        return $this->rowCount();
+        $num =  $this->rowCount();
+        $this->reset();
+        return $num;
     }
 
 /*------------------------------------------------------------------------------
@@ -979,7 +985,9 @@ class MoloOrm
         }
 
         // Return the SQL Query
-        return $this->rowCount();
+        $num = $this->rowCount();
+        $this->reset();
+        return $num;
     }
     
 /*------------------------------------------------------------------------------

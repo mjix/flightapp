@@ -146,19 +146,35 @@ function redirect($url, $status=303){
     app()->redirect($url, $status);
 }
 
-function session($key, $dval=null){
-    @session_start();
-
+function cookie($key, $dval=null){
     if(is_null($key)){
-        return $_SESSION;
+        return $_COOKIE;
     }
 
     if (is_array($key)) {
         foreach ($key as $k => $v) {
-            $_SESSION[$k] = $v;
+            $_COOKIE[$k] = $v;
         }
-        return $_SESSION;
+        return $_COOKIE;
     }
 
-    return isset($_SESSION[$key]) ? $_SESSION[$key] : $dval;
+    return isset($_COOKIE[$key]) ? $_COOKIE[$key] : $dval;
+}
+
+function session($key, $dval=null){
+    if (session_status() == PHP_SESSION_NONE) {
+        @session_start();
+    }
+
+    $ret = $_SESSION;
+    if(is_array($key)) {
+        foreach ($key as $k => $v) {
+            $_SESSION[$k] = $v;
+        }
+    }else if($key){
+        $ret = isset($_SESSION[$key]) ? $_SESSION[$key] : $dval;
+    }
+
+    session_write_close();
+    return $ret;
 }
