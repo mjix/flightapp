@@ -26,9 +26,10 @@ class Config{
 
             $config = require_once $file;
             if(is_array($config)){
-                self::set($config, null, $nkey.'.');
+                self::set($config, null, $nkey.'.', false);
             }
-            self::set($nkey, $config);
+            
+            self::set($nkey, $config, '', false);
             if(isset(self::$_config[$key])){
                 return self::$_config[$key];
             }
@@ -58,13 +59,19 @@ class Config{
      * @param mixed $value  value
      * @param string $prefix prefix key
      */
-    public static function set($key, $value='', $prefix=''){
+    public static function set($key, $value='', $prefix='', $replace=true){
         if(is_array($key)){
             foreach ($key as $kk => $vv) {
+                if(!$replace && isset(self::$_config[$prefix.$kk])){
+                    continue;
+                }
                 self::$_config[$prefix.$kk] = $vv;
             }
             return true;
         }else{
+            if(!$replace && isset(self::$_config[$prefix.$key])){
+                return self::$_config[$prefix.$key];
+            }
             return self::$_config[$prefix.$key] = $value;
         }
     }
