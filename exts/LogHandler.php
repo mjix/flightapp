@@ -43,13 +43,17 @@ class LogHandler{
             return ;
         }
 
-        $log_max_length = $this->getConfig('loglength', 2048);
+        $log_max_length = $this->getConfig('loglength', 10240);
         if($log_max_length>0 && $log_max_length<strlen($message)){
             $message = substr($message, 0, $log_max_length);
         }
 
         $message = sprintf($this->_log_format.PHP_EOL, date('Y-m-d H:i:s'), $level, $message, url());
         $this->_content .= $message;
+
+        if(strlen($this->_content)<$this->getConfig('loglength', 10240)){
+            $this->writer();
+        }
     }
 
     protected function _format($message, $args){
@@ -88,6 +92,7 @@ class LogHandler{
 
         $f = fopen($file, 'a', false);
         fwrite($f, $this->_content);
+        $this->_content = '';
         if(is_resource($f)){
             fclose($f);
         }
