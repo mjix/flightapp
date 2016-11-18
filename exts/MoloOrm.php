@@ -1028,8 +1028,11 @@ class MoloOrm
         } else {
             return $this->insert($this->_dirty_fields);
         }
-    }    
+    }
 
+    public function getPdo(){
+        return $this->pdo;
+    }
 
 /*------------------------------------------------------------------------------
                                 AGGREGATION
