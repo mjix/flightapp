@@ -12,11 +12,12 @@ class NewOrm extends MoloOrm{
         $req = request();
         $data = $req->all;
 
-        $page = intval(all('page', 1));
+        $page = intval(all('page', 1), 10);
         $page = max(1, $page);
+        $page = min($page, 100000);
 
-        $per_page = all('per_page', 1);
-        $per_page = max(15, $per_page);
+        $per_page = intval(all('per_page', 10), 10);
+        $per_page = min(100, $per_page);
 
         $obj = clone $this;
         $total = $obj->count();
