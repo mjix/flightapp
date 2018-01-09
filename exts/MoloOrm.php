@@ -1222,6 +1222,9 @@ class MoloOrm
      */
     protected function makePlaceholders($number_of_placeholders=1)
     {
+		if($number_of_placeholders<1){
+            throw new Exception('DB ERROR: NUMBER_PLACEHOLDER 0.');
+        }
         return implode(", ", array_fill(0, $number_of_placeholders, "?"));
     }
 
