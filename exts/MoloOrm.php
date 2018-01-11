@@ -25,6 +25,7 @@ namespace exts;
 
 use ArrayIterator,
     PDO,
+    Exception,
     DateTime;
 
 class MoloOrm
@@ -364,7 +365,8 @@ class MoloOrm
             $condition .= " = ?";
             $parameters = [$parameters];
         } else if (is_array($parameters)) { // where("column", array(1, 2)) => column IN (?,?)
-            $placeholders = $this->makePlaceholders(count($parameters));
+            $pnum = count($parameters);
+            $placeholders = $this->makePlaceholders($pnum);
             $condition = "({$condition} IN ({$placeholders}))";
         }
 
@@ -874,7 +876,7 @@ class MoloOrm
      * @param  array    $data - data to populate
      * @return $this 
      */
-    public function insert(Array $data)
+    public function insert(Array $data, $ignore=false)
     {
         $insert_values = [];
         $question_marks = [];
@@ -894,7 +896,7 @@ class MoloOrm
             $insert_values = array_values($data);
         }
 
-        $sql = "INSERT INTO {$this->table_name} (" . implode(",", $datafield ) . ") ";
+        $sql = "INSERT ".($ignore ? 'IGNORE' : '')." INTO {$this->table_name} (" . implode(",", $datafield ) . ") ";
         $sql .= "VALUES " . implode(',', $question_marks);
 
         $this->query($sql,$insert_values);
@@ -920,7 +922,7 @@ class MoloOrm
       * @param Array the data to update
       * @return int - total affected rows
       */
-    public function update(Array $data = null)
+    public function update(Array $data = null, $ignore=false)
     {
         $this->setSingleWhere();
 
@@ -942,7 +944,7 @@ class MoloOrm
             $field_list[] = "{$key} = ?";
         }
 
-        $query  = "UPDATE {$this->table_name} SET ";
+        $query  = "UPDATE ".($ignore ? 'IGNORE' : '')." {$this->table_name} SET ";
         $query .= implode(", ",$field_list);
         $query .= $this->getWhereString();
 
@@ -1222,7 +1224,7 @@ class MoloOrm
      */
     protected function makePlaceholders($number_of_placeholders=1)
     {
-		if($number_of_placeholders<1){
+        if($number_of_placeholders<1){
             throw new Exception('DB ERROR: NUMBER_PLACEHOLDER 0.');
         }
         return implode(", ", array_fill(0, $number_of_placeholders, "?"));
