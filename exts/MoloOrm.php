@@ -919,33 +919,40 @@ class MoloOrm
       * Update entries
       * Use the query builder to create the where clause
       *
-      * @param Array the data to update
+      * @param Array or Update String the data to update
       * @return int - total affected rows
       */
-    public function update(Array $data = null, $ignore=false)
+    public function update($data = null, $ignore=false)
     {
         $this->setSingleWhere();
 
-        if (! is_null($data)) {
-            $this->set($data);
-        }
+        $fields = '';
+        if(is_array($data)){
+            if (!is_null($data)) {
+                $this->set($data);
+            }
 
-        // Make sure we remove the primary key
-        unset($this->_dirty_fields[$this->getPrimaryKeyname()]);
-        
-        $values = array_values($this->_dirty_fields);
-        $field_list = [];
+            // Make sure we remove the primary key
+            unset($this->_dirty_fields[$this->getPrimaryKeyname()]);
+            
+            $values = array_values($this->_dirty_fields);
+            $field_list = [];
 
-        if (count($values) == 0){
-            return false;
-        }
+            if (count($values) == 0){
+                return false;
+            }
 
-        foreach (array_keys($this->_dirty_fields) as $key) {
-            $field_list[] = "{$key} = ?";
+            foreach (array_keys($this->_dirty_fields) as $key) {
+                $field_list[] = "{$key} = ?";
+            }
+            $fields = implode(", ",$field_list);
+        }else{
+            $fields = strval($data);
+            $values = array();
         }
 
         $query  = "UPDATE ".($ignore ? 'IGNORE' : '')." {$this->table_name} SET ";
-        $query .= implode(", ",$field_list);
+        $query .= $fields;
         $query .= $this->getWhereString();
 
         $values = array_merge($values, $this->getWhereParameters());
