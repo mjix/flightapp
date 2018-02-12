@@ -42,6 +42,11 @@ function request(){
     if(!isset($req->all)){
         $req->all = new Collection($_REQUEST);
     }
+    
+    if($req->type == 'application/json'){
+        $req->all->setData(array_merge($req->query->getData(), $req->data->getData()));
+    }
+
     return $req;
 }
 
