@@ -3,24 +3,28 @@
 //local mysql config
 if(config('app.env', '') == 'local'){
     $dbconfig = [
-        'ymstaff' => [
+        'default' => [
+            'driver' => 'mysql',
             'host' => '127.0.0.1',
             'port' => '3306',
-            'database' => 'youme_db_ymstaff',
+            'database' => 'db_test',
             'username' => 'root',
-            'password' => '',
-            'charset' => 'utf8'
+            'password' => '123',
+            'charset' => 'utf8',
+            'collation' => 'utf8_general_ci'
         ],
     ];
 }else{
     $dbconfig = [
-        'ymstaff' => [
-            'host' => '10.18.30.30',
+        'default' => [
+            'driver' => 'mysql',
+            'host' => '10.10.10.10',
             'port' => '3306',
-            'database' => 'youme_db_ymstaff',
+            'database' => 'db_test',
             'username' => 'root',
             'password' => '123',
-            'charset' => 'utf8'
+            'charset' => 'utf8',
+            'collation' => 'utf8_general_ci'
         ],
     ];
 }
