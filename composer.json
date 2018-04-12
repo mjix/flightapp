@@ -1,5 +1,7 @@
 {
     "require": {
-        "mikecao/flight": "^1.2"
+        "mikecao/flight": "^1.2",
+        "illuminate/database": "v5.2.45",
+        "illuminate/pagination": "v5.2.45"
     }
 }

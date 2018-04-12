@@ -127,7 +127,7 @@ function query($key, $dval=null){
  * @param  string $key config in config/databases.php
  * @return object      VoodOrm; https://github.com/mardix/VoodOrm
  */
-function db($key){
+function db($key=null){
     return DB::connection($key);
 }
 

@@ -35,7 +35,7 @@ $all = request()->all;
 ```
 
 #DB
-orm create from [https://github.com/mardix/VoodOrm]; config in config/databases.php
+ORM create from [https://laravel.com/docs/5.6/queries]; config in config/databases.php
 
 ##query
 ```php
@@ -46,10 +46,10 @@ $list = $table->get();
 //return pagination 
 // ['total' => 1, 'per_page' => 1, 'current_page' => 1, 
 //  'from' => 0, 'to' => 1, 'data' => $rowlist]
-$pageData = $table->paginate();
+$pageData = $table->paginate()->toArray();
 
 //get id=1 row
-$first = $table->where('id', 1)->get();
+$first = $table->where('id', 1)->first();
 ```
 
 ##update
@@ -99,29 +99,5 @@ redirect($url, $status=303);            //redirect url; redirect('/user/login');
 resource_path('/config/databases.php'); //get full path file
 ```
 
-#more
-```
-//record all INSERT/UPDATE/DELETE action
-use exts\MoloOrm;
-MoloOrm::setOnQuery(function($sql, $params){
-    if(strtoupper(substr($sql, 0, 6)) == 'SELECT'){
-        return ;
-    }
-    
-    $callback = MoloOrm::getOnQuery();
-    MoloOrm::setOnQuery(false);
-
-    $userinfo = session('userinfo');
-    $table = db('pcmgr_tuijian')->table('e_sqllog');
-    $table->insert([
-        'sqlstr' => $sql,
-        'params' => $params ? json_encode($params) : '',
-        'ipaddr' => request()->ip,
-        'insuser' => $userinfo && isset($userinfo['name']) ? $userinfo['name'] : 'unknow',
-        'instime' => date('Y-m-d H:i:s')
-    ]);
-
-    MoloOrm::setOnQuery($callback);
-});
-```
-
+#requires
+php: >=5.5.9
